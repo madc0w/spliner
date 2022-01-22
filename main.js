@@ -1,22 +1,65 @@
 const points = [];
 const pointRadius = 6;
-let canvas, ctx;
+let canvas, ctx, draggingPoint;
 
 function onLoad() {
 	canvas = document.getElementById('canvas');
 	canvas.width = 800;
 	canvas.height = 800;
 	ctx = canvas.getContext('2d');
+
+	canvas.addEventListener('mousedown', canvasMouseDown);
+	canvas.addEventListener('mouseup', canvasMouseUp);
+	canvas.addEventListener('mousemove', canvasMouseMove);
 }
 
-function canvasClick(event) {
+function canvasMouseMove(event) {
 	// console.log(event);
-
-	points.push({
+	const p = {
 		x: event.layerX,
 		y: event.layerY,
-	});
+	};
+	if (draggingPoint) {
+		draggingPoint.x = p.x;
+		draggingPoint.y = p.y;
+		paint();
+	}
+}
+
+function canvasMouseDown(event) {
+	const p = {
+		x: event.layerX,
+		y: event.layerY,
+	};
+	for (const point of points) {
+		const d = dist(p, point);
+		// console.log(d);
+		if (d < pointRadius) {
+			draggingPoint = point;
+			break;
+		}
+	}
+}
+
+function canvasMouseUp(event) {
+	const p = {
+		x: event.layerX,
+		y: event.layerY,
+	};
+	if (draggingPoint) {
+		// console.log('dragging', draggingPoint);
+		draggingPoint.x = p.x;
+		draggingPoint.y = p.y;
+		draggingPoint = null;
+	} else {
+		points.push(p);
+	}
+
 	paint();
+}
+
+function canvasDrag(event) {
+	console.log(event);
 }
 
 function paint() {
@@ -61,4 +104,10 @@ function paint() {
 		}
 		ctx.stroke();
 	}
+}
+
+function dist(p1, p2) {
+	const dx = p1.x - p2.x;
+	const dy = p1.y - p2.y;
+	return Math.sqrt(dx * dx + dy * dy);
 }
