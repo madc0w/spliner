@@ -16,13 +16,12 @@ body {
 }
 
 #header {
-	text-align: center;
 	font-size: 32px;
 	color: #44993d;
 }
 
 #output-container canvas {
-	background-color: #ddf;
+	background-color: #dff;
 	border-radius: 8px;
 	border-style: solid;
 	border-color: black;
