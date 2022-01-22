@@ -28,6 +28,24 @@ body {
 	border-width: 1px;
 }
 
+.exponent {
+	vertical-align: super;
+	font-size: 16px;
+}
+
+.sign {
+	padding-left: 8px;
+	padding-right: 8px;
+	display: inline-block;
+}
+
+.variable {
+	font-weight: bold;
+	font-size: 18px;
+	font-family: 'Petit Formal Script', cursive;
+	margin-left: 4px;
+}
+
 .button {
 	border-radius: 8px;
 	border-style: solid;

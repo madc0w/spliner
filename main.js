@@ -1,6 +1,6 @@
 const points = [];
 const pointRadius = 6;
-let canvas, ctx, draggingPoint;
+let canvas, ctx, draggingPoint, equationContainer;
 
 function onLoad() {
 	canvas = document.getElementById('canvas');
@@ -11,6 +11,8 @@ function onLoad() {
 	canvas.addEventListener('mousedown', canvasMouseDown);
 	canvas.addEventListener('mouseup', canvasMouseUp);
 	canvas.addEventListener('mousemove', canvasMouseMove);
+
+	equationContainer = document.getElementById('equation-container');
 }
 
 function canvasMouseMove(event) {
@@ -58,10 +60,6 @@ function canvasMouseUp(event) {
 	paint();
 }
 
-function canvasDrag(event) {
-	console.log(event);
-}
-
 function paint() {
 	ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -86,6 +84,11 @@ function paint() {
 		// console.log(m2);
 		const m1Inv = matInverse(m1);
 		const result = matProduct(m1Inv, m2);
+		for (const r of result) {
+			if (isNaN(r)) {
+				return;
+			}
+		}
 		// console.log(result);
 
 		ctx.strokeStyle = '#000';
@@ -93,7 +96,7 @@ function paint() {
 		for (let x = 0; x < canvas.width; x++) {
 			let y = 0;
 			for (let i = 0; i < result.length; i++) {
-				y += result[i] * Math.pow(x, result.length - i - 1);
+				y += result[i][0] * Math.pow(x, result.length - i - 1);
 			}
 			if (x == 0) {
 				ctx.moveTo(x, y);
@@ -103,6 +106,43 @@ function paint() {
 			// console.log(x, y);
 		}
 		ctx.stroke();
+
+		let html = '<span class="variable">y</span> = ';
+		for (let i = 0; i < result.length; i++) {
+			const coef = result[i][0];
+			if (coef == 0) {
+				continue;
+			}
+			const sign = Math.sign(coef);
+			if (i > 0 || sign < 0) {
+				html += `<span class="sign">${sign < 0 ? '-' : '+'}</span>`;
+			}
+			let magnitude = 0;
+			if (Math.abs(coef) < 0.1) {
+				// console.log('coef', coef);
+				do {
+					magnitude++;
+					// console.log(magnitude, coef.toFixed(magnitude));
+				} while (
+					parseFloat(
+						Math.abs(coef)
+							.toString()
+							.substring(0, magnitude + 2)
+					) == 0
+				);
+				// const adjusted = coef * Math.pow(10, magnitude);
+				// console.log('magnitude', coef, magnitude, adjusted.toFixed(2));
+			}
+			html += Math.abs(coef).toFixed(magnitude + 2);
+			const pow = result.length - i - 1;
+			if (pow > 0) {
+				html += '<span class="variable">x</span>';
+				if (pow > 1) {
+					html += `<span class="exponent">${pow}</span>`;
+				}
+			}
+		}
+		equationContainer.innerHTML = html;
 	}
 }
 
