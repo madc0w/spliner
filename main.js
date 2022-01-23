@@ -109,7 +109,10 @@ function paint() {
 
 		let html = '<span class="variable">y</span> = ';
 		for (let i = 0; i < result.length; i++) {
-			const coef = result[i][0];
+			let coef = -result[i][0];
+			if (i == result.length - 1) {
+				coef += canvas.height;
+			}
 			if (coef == 0) {
 				continue;
 			}
