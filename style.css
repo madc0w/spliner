@@ -28,9 +28,14 @@ body {
 	border-width: 1px;
 }
 
+#equation-container {
+	padding: 22px;
+	font-size: 32px;
+}
+
 .exponent {
 	vertical-align: super;
-	font-size: 16px;
+	font-size: 22px;
 }
 
 .sign {
@@ -41,7 +46,7 @@ body {
 
 .variable {
 	font-weight: bold;
-	font-size: 18px;
+	font-size: 28px;
 	font-family: 'Petit Formal Script', cursive;
 	margin-left: 4px;
 }
