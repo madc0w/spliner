@@ -1,11 +1,11 @@
-const points = [];
+let points = [];
 const pointRadius = 6;
 let canvas, ctx, draggingPoint, equationContainer, coefs;
 
 function onLoad() {
 	canvas = document.getElementById('canvas');
-	canvas.width = 800;
-	canvas.height = 800;
+	canvas.width = innerWidth * 0.9;
+	canvas.height = 600;
 	ctx = canvas.getContext('2d');
 
 	canvas.addEventListener('mousedown', canvasMouseDown);
@@ -154,13 +154,13 @@ function paint() {
 			if (Math.abs(coef) < 0.1) {
 				// console.log('coef', coef);
 				magnitude = Math.floor(-Math.log10(Math.abs(coef)));
-				const adjusted = coef * Math.pow(10, magnitude);
-				console.log('magnitude', coef, magnitude, adjusted.toFixed(2));
+				// const adjusted = coef * Math.pow(10, magnitude);
+				// console.log('magnitude', coef, magnitude, adjusted.toFixed(2));
 			}
 			html += Math.abs(coef).toFixed(magnitude + 2);
-			if ('0.000' == Math.abs(coef).toFixed(magnitude + 2)) {
-				console.log(coef, magnitude);
-			}
+			// if ('0.000' == Math.abs(coef).toFixed(magnitude + 2)) {
+			// 	console.log(coef, magnitude);
+			// }
 			const pow = coefs.length - i - 1;
 			if (pow > 0) {
 				html += '<span class="variable">x</span>';
@@ -204,4 +204,11 @@ function f(x) {
 		y += coefs[i][0] * Math.pow(x, coefs.length - i - 1);
 	}
 	return y;
+}
+
+function reset() {
+	coefs = null;
+	draggingPoint = null;
+	points = [];
+	paint();
 }

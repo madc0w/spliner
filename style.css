@@ -7,8 +7,8 @@ body {
 	background-color: lightgreen;
 	border-radius: 8px;
 	margin: 8px;
-	padding: 18px;
-	margin-left: calc(50vw - 110px);
+	/* padding: 18px; */
+	/* margin-left: calc(50vw - 110px); */
 }
 
 #controls-container div {
