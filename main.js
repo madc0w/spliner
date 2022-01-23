@@ -1,6 +1,7 @@
 const points = [];
 const pointRadius = 6;
-let canvas, ctx, draggingPoint, equationContainer;
+let canvas, ctx, draggingPoint, equationContainer, coefs;
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
 function onLoad() {
 	canvas = document.getElementById('canvas');
@@ -24,6 +25,7 @@ function canvasMouseMove(event) {
 	if (draggingPoint) {
 		draggingPoint.x = p.x;
 		draggingPoint.y = p.y;
+		computeCoefs();
 		paint();
 	}
 }
@@ -57,7 +59,31 @@ function canvasMouseUp(event) {
 		points.push(p);
 	}
 
+	computeCoefs();
 	paint();
+
+	if (coefs) {
+		const secs = 2;
+		const arrayBuffer = audioCtx.createBuffer(
+			1,
+			audioCtx.sampleRate * secs,
+			audioCtx.sampleRate
+		);
+
+		const audioSource = audioCtx.createBufferSource();
+		audioSource.buffer = arrayBuffer;
+		audioSource.connect(audioCtx.destination);
+		audioSource.start();
+
+		const buffer = arrayBuffer.getChannelData(0);
+		let i = 0;
+		for (let x = 0; x < canvas.width; x += canvas.width / arrayBuffer.length) {
+			const a =
+				(i * 2 * Math.PI * (canvas.height - f(x))) / audioCtx.sampleRate;
+			buffer[i++] = Math.sin(a);
+		}
+		// console.log(buffer);
+	}
 }
 
 function paint() {
@@ -69,35 +95,18 @@ function paint() {
 		ctx.arc(point.x, point.y, pointRadius, 0, 2 * Math.PI);
 		ctx.fill();
 	}
-	if (points.length > 1) {
-		const m1 = matMake(points.length, points.length);
-		for (let i = 0; i < m1.length; i++) {
-			for (let j = 0; j < m1.length; j++) {
-				m1[i][m1.length - j - 1] = Math.pow(points[i].x, j);
-			}
-		}
-		// console.log(m1);
-		const m2 = matMake(points.length, 1);
-		for (let i = 0; i < m2.length; i++) {
-			m2[i][0] = points[i].y;
-		}
-		// console.log(m2);
-		const m1Inv = matInverse(m1);
-		const result = matProduct(m1Inv, m2);
-		for (const r of result) {
+	if (coefs) {
+		for (const r of coefs) {
 			if (isNaN(r)) {
 				return;
 			}
 		}
-		// console.log(result);
+		// console.log(coefs);
 
 		ctx.strokeStyle = '#000';
 		ctx.beginPath();
 		for (let x = 0; x < canvas.width; x++) {
-			let y = 0;
-			for (let i = 0; i < result.length; i++) {
-				y += result[i][0] * Math.pow(x, result.length - i - 1);
-			}
+			const y = f(x);
 			if (x == 0) {
 				ctx.moveTo(x, y);
 			} else {
@@ -108,9 +117,9 @@ function paint() {
 		ctx.stroke();
 
 		let html = '<span class="variable">y</span> = ';
-		for (let i = 0; i < result.length; i++) {
-			let coef = -result[i][0];
-			if (i == result.length - 1) {
+		for (let i = 0; i < coefs.length; i++) {
+			let coef = -coefs[i][0];
+			if (i == coefs.length - 1) {
 				coef += canvas.height;
 			}
 			if (coef == 0) {
@@ -137,7 +146,7 @@ function paint() {
 				// console.log('magnitude', coef, magnitude, adjusted.toFixed(2));
 			}
 			html += Math.abs(coef).toFixed(magnitude + 2);
-			const pow = result.length - i - 1;
+			const pow = coefs.length - i - 1;
 			if (pow > 0) {
 				html += '<span class="variable">x</span>';
 				if (pow > 1) {
@@ -153,4 +162,31 @@ function dist(p1, p2) {
 	const dx = p1.x - p2.x;
 	const dy = p1.y - p2.y;
 	return Math.sqrt(dx * dx + dy * dy);
+}
+
+function computeCoefs() {
+	if (points.length > 1) {
+		const m1 = matMake(points.length, points.length);
+		for (let i = 0; i < m1.length; i++) {
+			for (let j = 0; j < m1.length; j++) {
+				m1[i][m1.length - j - 1] = Math.pow(points[i].x, j);
+			}
+		}
+		// console.log(m1);
+		const m2 = matMake(points.length, 1);
+		for (let i = 0; i < m2.length; i++) {
+			m2[i][0] = points[i].y;
+		}
+		// console.log(m2);
+		const m1Inv = matInverse(m1);
+		coefs = matProduct(m1Inv, m2);
+	}
+}
+
+function f(x) {
+	let y = 0;
+	for (let i = 0; i < coefs.length; i++) {
+		y += coefs[i][0] * Math.pow(x, coefs.length - i - 1);
+	}
+	return y;
 }
