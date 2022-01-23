@@ -1,7 +1,6 @@
 const points = [];
 const pointRadius = 6;
 let canvas, ctx, draggingPoint, equationContainer, coefs;
-const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
 function onLoad() {
 	canvas = document.getElementById('canvas');
@@ -63,26 +62,45 @@ function canvasMouseUp(event) {
 	paint();
 
 	if (coefs) {
-		const secs = 2;
-		const arrayBuffer = audioCtx.createBuffer(
-			1,
-			audioCtx.sampleRate * secs,
-			audioCtx.sampleRate
-		);
-
-		const audioSource = audioCtx.createBufferSource();
-		audioSource.buffer = arrayBuffer;
-		audioSource.connect(audioCtx.destination);
-		audioSource.start();
-
-		const buffer = arrayBuffer.getChannelData(0);
-		let i = 0;
-		for (let x = 0; x < canvas.width; x += canvas.width / arrayBuffer.length) {
-			const a =
-				(i * 2 * Math.PI * (canvas.height - f(x))) / audioCtx.sampleRate;
-			buffer[i++] = Math.sin(a);
+		const secs = 4;
+		const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+		const oscillator = audioCtx.createOscillator();
+		for (let x = 0; x < canvas.width; x++) {
+			const freq = Math.max(0, canvas.height - f(x));
+			oscillator.frequency.setValueAtTime(freq, (x * secs) / canvas.width);
 		}
-		// console.log(buffer);
+		oscillator.connect(audioCtx.destination);
+		oscillator.start();
+		oscillator.stop(secs);
+
+		// const arrayBuffer = audioCtx.createBuffer(
+		// 	1,
+		// 	audioCtx.sampleRate * secs,
+		// 	audioCtx.sampleRate
+		// );
+
+		// const audioSource = audioCtx.createBufferSource();
+		// audioSource.buffer = arrayBuffer;
+		// audioSource.connect(audioCtx.destination);
+		// audioSource.start();
+
+		// const buffer = arrayBuffer.getChannelData(0);
+		// let i = 0;
+		// const freqs = [];
+		// for (let x = 0; x < canvas.width; x += canvas.width / arrayBuffer.length) {
+		// 	const freq = canvas.height - f(x);
+		// 	let val = 0;
+		// 	if (freq > 20) {
+		// 		freqs.push(freq);
+		// 		const a = (i * 2 * Math.PI * freq) / audioCtx.sampleRate;
+		// 		val = Math.sin(a);
+		// 		if (i % 100 == 0) {
+		// 			console.log(freq);
+		// 		}
+		// 	}
+		// 	buffer[i++] = val;
+		// }
+		// // console.log(freqs);
 	}
 }
 
