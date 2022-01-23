@@ -45,6 +45,9 @@ function canvasMouseDown(event) {
 }
 
 function canvasMouseUp(event) {
+	if (points.length >= 18) {
+		return;
+	}
 	const p = {
 		x: event.layerX,
 		y: event.layerY,
@@ -150,20 +153,14 @@ function paint() {
 			let magnitude = 0;
 			if (Math.abs(coef) < 0.1) {
 				// console.log('coef', coef);
-				do {
-					magnitude++;
-					// console.log(magnitude, coef.toFixed(magnitude));
-				} while (
-					parseFloat(
-						Math.abs(coef)
-							.toString()
-							.substring(0, magnitude + 2)
-					) == 0
-				);
-				// const adjusted = coef * Math.pow(10, magnitude);
-				// console.log('magnitude', coef, magnitude, adjusted.toFixed(2));
+				magnitude = Math.floor(-Math.log10(Math.abs(coef)));
+				const adjusted = coef * Math.pow(10, magnitude);
+				console.log('magnitude', coef, magnitude, adjusted.toFixed(2));
 			}
 			html += Math.abs(coef).toFixed(magnitude + 2);
+			if ('0.000' == Math.abs(coef).toFixed(magnitude + 2)) {
+				console.log(coef, magnitude);
+			}
 			const pow = coefs.length - i - 1;
 			if (pow > 0) {
 				html += '<span class="variable">x</span>';
