@@ -14,6 +14,7 @@ function onLoad() {
 
 	equationContainer = document.getElementById('equation-container');
 	audioTimeContainer = document.getElementById('audio-time');
+	audioTimeContainer.style.width = `${canvas.width}px`;
 }
 
 function canvasMouseMove(event) {
