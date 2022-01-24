@@ -1,6 +1,14 @@
+let secs = 4;
 let points = [];
 const pointRadius = 6;
-let canvas, ctx, draggingPoint, equationContainer, audioTimeContainer, coefs;
+let canvas,
+	ctx,
+	draggingPoint,
+	equationContainer,
+	audioTimeContainer,
+	playTimeContainer,
+	lengthSlider,
+	coefs;
 
 function onLoad() {
 	canvas = document.getElementById('canvas');
@@ -15,6 +23,13 @@ function onLoad() {
 	equationContainer = document.getElementById('equation-container');
 	audioTimeContainer = document.getElementById('audio-time');
 	audioTimeContainer.style.width = `${canvas.width}px`;
+
+	lengthSlider = document.getElementById('length-slider');
+	lengthSlider.addEventListener('change', lengthSliderChange);
+
+	playTimeContainer = document.getElementById('play-time');
+	lengthSlider.value = 100 / (secs - 1);
+	lengthSliderChange();
 }
 
 function canvasMouseMove(event) {
@@ -134,6 +149,12 @@ function paint() {
 	}
 }
 
+function lengthSliderChange(e) {
+	const value = parseInt(lengthSlider.value);
+	secs = 1 + (9 * value) / 100;
+	playTimeContainer.innerHTML = `${secs.toFixed(1)} secs.`;
+}
+
 function dist(p1, p2) {
 	const dx = p1.x - p2.x;
 	const dy = p1.y - p2.y;
@@ -176,7 +197,6 @@ function reset() {
 
 function play() {
 	if (coefs) {
-		const secs = 4;
 		const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 		const oscillator = audioCtx.createOscillator();
 		for (let x = 0; x < canvas.width; x++) {
