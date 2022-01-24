@@ -1,6 +1,6 @@
 let points = [];
 const pointRadius = 6;
-let canvas, ctx, draggingPoint, equationContainer, coefs;
+let canvas, ctx, draggingPoint, equationContainer, audioTimeContainer, coefs;
 
 function onLoad() {
 	canvas = document.getElementById('canvas');
@@ -13,6 +13,7 @@ function onLoad() {
 	canvas.addEventListener('mousemove', canvasMouseMove);
 
 	equationContainer = document.getElementById('equation-container');
+	audioTimeContainer = document.getElementById('audio-time');
 }
 
 function canvasMouseMove(event) {
@@ -63,48 +64,7 @@ function canvasMouseUp(event) {
 
 	computeCoefs();
 	paint();
-
-	if (coefs) {
-		const secs = 4;
-		const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-		const oscillator = audioCtx.createOscillator();
-		for (let x = 0; x < canvas.width; x++) {
-			const freq = Math.max(0, canvas.height - f(x));
-			oscillator.frequency.setValueAtTime(freq, (x * secs) / canvas.width);
-		}
-		oscillator.connect(audioCtx.destination);
-		oscillator.start();
-		oscillator.stop(secs);
-
-		// const arrayBuffer = audioCtx.createBuffer(
-		// 	1,
-		// 	audioCtx.sampleRate * secs,
-		// 	audioCtx.sampleRate
-		// );
-
-		// const audioSource = audioCtx.createBufferSource();
-		// audioSource.buffer = arrayBuffer;
-		// audioSource.connect(audioCtx.destination);
-		// audioSource.start();
-
-		// const buffer = arrayBuffer.getChannelData(0);
-		// let i = 0;
-		// const freqs = [];
-		// for (let x = 0; x < canvas.width; x += canvas.width / arrayBuffer.length) {
-		// 	const freq = canvas.height - f(x);
-		// 	let val = 0;
-		// 	if (freq > 20) {
-		// 		freqs.push(freq);
-		// 		const a = (i * 2 * Math.PI * freq) / audioCtx.sampleRate;
-		// 		val = Math.sin(a);
-		// 		if (i % 100 == 0) {
-		// 			console.log(freq);
-		// 		}
-		// 	}
-		// 	buffer[i++] = val;
-		// }
-		// // console.log(freqs);
-	}
+	play();
 }
 
 function paint() {
@@ -211,4 +171,62 @@ function reset() {
 	draggingPoint = null;
 	points = [];
 	paint();
+}
+
+function play() {
+	if (coefs) {
+		const secs = 4;
+		const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+		const oscillator = audioCtx.createOscillator();
+		for (let x = 0; x < canvas.width; x++) {
+			const freq = Math.max(0, canvas.height - f(x));
+			oscillator.frequency.setValueAtTime(freq, (x * secs) / canvas.width);
+		}
+		oscillator.connect(audioCtx.destination);
+		oscillator.start();
+		const startTime = new Date();
+		oscillator.stop(secs);
+
+		const intervalId = setInterval(() => {
+			const elapsed = new Date() - startTime;
+			let html = '';
+			if (elapsed >= secs * 1000) {
+				clearInterval(intervalId);
+			} else {
+				const pos = (canvas.width * elapsed) / (secs * 1000);
+				// console.log(pos);
+				html = `<div class="audio-time-marker" style="left: ${pos}px;">^</div>`;
+			}
+			audioTimeContainer.innerHTML = html;
+		}, 20);
+
+		// const arrayBuffer = audioCtx.createBuffer(
+		// 	1,
+		// 	audioCtx.sampleRate * secs,
+		// 	audioCtx.sampleRate
+		// );
+
+		// const audioSource = audioCtx.createBufferSource();
+		// audioSource.buffer = arrayBuffer;
+		// audioSource.connect(audioCtx.destination);
+		// audioSource.start();
+
+		// const buffer = arrayBuffer.getChannelData(0);
+		// let i = 0;
+		// const freqs = [];
+		// for (let x = 0; x < canvas.width; x += canvas.width / arrayBuffer.length) {
+		// 	const freq = canvas.height - f(x);
+		// 	let val = 0;
+		// 	if (freq > 20) {
+		// 		freqs.push(freq);
+		// 		const a = (i * 2 * Math.PI * freq) / audioCtx.sampleRate;
+		// 		val = Math.sin(a);
+		// 		if (i % 100 == 0) {
+		// 			console.log(freq);
+		// 		}
+		// 	}
+		// 	buffer[i++] = val;
+		// }
+		// // console.log(freqs);
+	}
 }
